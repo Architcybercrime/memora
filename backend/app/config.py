@@ -40,8 +40,8 @@ class Settings(BaseSettings):
     # Redis
     redis_url: str = "redis://localhost:6379/0"
 
-    # Whisper
-    whisper_model: str = "base.en"
+    # Whisper — tiny.en fits Render's 512MB free tier; bump for better quality on bigger hosts.
+    whisper_model: str = "tiny.en"
     whisper_device: Literal["cpu", "cuda"] = "cpu"
     whisper_compute_type: str = "int8"
 

@@ -1,0 +1,55 @@
+# Render blueprint — declarative deploy.
+# Docs: https://render.com/docs/blueprint-spec
+#
+# Workflow:
+#   1. Push this file to the GitHub repo.
+#   2. In the Render dashboard: New → Blueprint → connect this repo.
+#   3. Render reads this file, creates the service, asks you to fill the secrets
+#      marked `sync: false` below (DATABASE_URL, REDIS_URL, MISTRAL_API_KEY).
+#   4. First build kicks off automatically. Subsequent pushes auto-deploy.
+
+services:
+  - type: web
+    name: memora-backend
+    runtime: docker
+    plan: free
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      # --- public defaults ---
+      - key: LLM_PROVIDER
+        value: mistral
+      - key: LLM_MODEL
+        value: mistral-small-latest
+      - key: EMBEDDING_PROVIDER
+        value: mistral
+      - key: EMBEDDING_MODEL
+        value: mistral-embed
+      - key: EMBEDDING_DIM
+        value: "1024"
+      - key: WHISPER_MODEL
+        value: tiny.en
+      - key: WHISPER_DEVICE
+        value: cpu
+      - key: WHISPER_COMPUTE_TYPE
+        value: int8
+      - key: SHORT_TERM_WINDOW
+        value: "10"
+      - key: LONG_TERM_TOP_K
+        value: "8"
+      - key: API_HOST
+        value: 0.0.0.0
+      - key: API_PORT
+        value: "8000"
+      # CORS — update after your Vercel deploy with the real URL, then redeploy.
+      - key: CORS_ORIGINS
+        value: https://memora.vercel.app,http://localhost:3000
+      # --- secrets (set in dashboard, never in git) ---
+      - key: MISTRAL_API_KEY
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
