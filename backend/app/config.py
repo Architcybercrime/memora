@@ -28,7 +28,9 @@ class Settings(BaseSettings):
     embedding_model: str = "mistral-embed"
     embedding_dim: int = 1024
 
-    # Postgres
+    # Postgres — set DATABASE_URL to override the discrete fields.
+    # Accepts either ``postgresql://`` or ``postgresql+asyncpg://`` schemes.
+    database_url: str | None = None
     postgres_host: str = "localhost"
     postgres_port: int = 5432
     postgres_user: str = "memora"
@@ -54,6 +56,14 @@ class Settings(BaseSettings):
 
     @property
     def postgres_dsn(self) -> str:
+        if self.database_url:
+            # Normalize scheme for SQLAlchemy async driver.
+            url = self.database_url
+            if url.startswith("postgresql://"):
+                url = "postgresql+asyncpg://" + url[len("postgresql://") :]
+            elif url.startswith("postgres://"):
+                url = "postgresql+asyncpg://" + url[len("postgres://") :]
+            return url
         return (
             f"postgresql+asyncpg://{self.postgres_user}:{self.postgres_password}"
             f"@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
