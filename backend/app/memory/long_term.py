@@ -9,7 +9,7 @@ from __future__ import annotations
 import logging
 from collections.abc import Sequence
 
-from langchain_openai import OpenAIEmbeddings
+from langchain_core.embeddings import Embeddings
 from sqlalchemy import text
 
 from app.config import get_settings
@@ -18,18 +18,31 @@ from app.memory.schemas import Memory, MemoryIn
 
 log = logging.getLogger(__name__)
 
-_embedder: OpenAIEmbeddings | None = None
+_embedder: Embeddings | None = None
 
 
-def _embeddings() -> OpenAIEmbeddings:
+def _embeddings() -> Embeddings:
+    """Lazily construct the configured embedding provider."""
     global _embedder
     if _embedder is None:
         s = get_settings()
-        _embedder = OpenAIEmbeddings(
-            model=s.embedding_model,
-            api_key=s.openai_api_key,
-            dimensions=s.embedding_dim,
-        )
+        if s.embedding_provider == "openai":
+            from langchain_openai import OpenAIEmbeddings
+
+            _embedder = OpenAIEmbeddings(
+                model=s.embedding_model,
+                api_key=s.openai_api_key,
+                dimensions=s.embedding_dim,
+            )
+        elif s.embedding_provider == "google":
+            from langchain_google_genai import GoogleGenerativeAIEmbeddings
+
+            _embedder = GoogleGenerativeAIEmbeddings(
+                model=s.embedding_model,
+                google_api_key=s.google_api_key,
+            )
+        else:
+            raise ValueError(f"unknown embedding_provider: {s.embedding_provider}")
     return _embedder
 
 

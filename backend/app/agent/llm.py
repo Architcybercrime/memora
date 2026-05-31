@@ -22,4 +22,12 @@ def get_llm() -> BaseChatModel:
         from langchain_anthropic import ChatAnthropic
 
         return ChatAnthropic(model=s.llm_model, api_key=s.anthropic_api_key, temperature=0.3)
+    if s.llm_provider == "google":
+        from langchain_google_genai import ChatGoogleGenerativeAI
+
+        return ChatGoogleGenerativeAI(
+            model=s.llm_model,
+            google_api_key=s.google_api_key,
+            temperature=0.3,
+        )
     raise ValueError(f"unknown llm_provider: {s.llm_provider}")
