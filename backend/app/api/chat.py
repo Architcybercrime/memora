@@ -53,7 +53,9 @@ async def chat(req: ChatRequest):
 
         final = "".join(full).strip()
         # Persist both turns to short-term history.
-        await short_term.append(req.user_id, req.session_id, ChatMessage(role="user", content=req.message))
+        await short_term.append(
+            req.user_id, req.session_id, ChatMessage(role="user", content=req.message)
+        )
         if final:
             await short_term.append(
                 req.user_id, req.session_id, ChatMessage(role="assistant", content=final)

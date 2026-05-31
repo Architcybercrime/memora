@@ -15,7 +15,9 @@ def get_llm() -> BaseChatModel:
     if s.llm_provider == "openai":
         from langchain_openai import ChatOpenAI
 
-        return ChatOpenAI(model=s.llm_model, api_key=s.openai_api_key, temperature=0.3, streaming=True)
+        return ChatOpenAI(
+            model=s.llm_model, api_key=s.openai_api_key, temperature=0.3, streaming=True
+        )
     if s.llm_provider == "anthropic":
         from langchain_anthropic import ChatAnthropic
 

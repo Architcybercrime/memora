@@ -7,7 +7,7 @@ Search uses cosine distance against an HNSW index.
 from __future__ import annotations
 
 import logging
-from typing import Sequence
+from collections.abc import Sequence
 
 from langchain_openai import OpenAIEmbeddings
 from sqlalchemy import text
@@ -43,9 +43,10 @@ async def upsert(user_id: str, mem: MemoryIn) -> Memory:
     embedding = (await _embeddings().aembed_documents([mem.content]))[0]
     async with session() as s:
         row = (
-            await s.execute(
-                text(
-                    """
+            (
+                await s.execute(
+                    text(
+                        """
                     INSERT INTO memories
                         (user_id, content, context, category, importance, embedding)
                     VALUES
@@ -53,17 +54,20 @@ async def upsert(user_id: str, mem: MemoryIn) -> Memory:
                     RETURNING id, user_id, content, context, category, importance,
                               created_at, updated_at, access_count, last_used_at
                     """
-                ),
-                {
-                    "user_id": user_id,
-                    "content": mem.content,
-                    "context": mem.context,
-                    "category": mem.category,
-                    "importance": mem.importance,
-                    "embedding": _to_pgvector(embedding),
-                },
+                    ),
+                    {
+                        "user_id": user_id,
+                        "content": mem.content,
+                        "context": mem.context,
+                        "category": mem.category,
+                        "importance": mem.importance,
+                        "embedding": _to_pgvector(embedding),
+                    },
+                )
             )
-        ).mappings().one()
+            .mappings()
+            .one()
+        )
         await s.commit()
     return Memory(**dict(row))
 
@@ -71,12 +75,13 @@ async def upsert(user_id: str, mem: MemoryIn) -> Memory:
 async def search(user_id: str, query: str, top_k: int | None = None) -> list[Memory]:
     settings = get_settings()
     k = top_k or settings.long_term_top_k
-    embedding = (await _embeddings().aembed_query(query))
+    embedding = await _embeddings().aembed_query(query)
     async with session() as s:
         rows = (
-            await s.execute(
-                text(
-                    """
+            (
+                await s.execute(
+                    text(
+                        """
                     SELECT id, user_id, content, context, category, importance,
                            created_at, updated_at, access_count, last_used_at,
                            1 - (embedding <=> CAST(:embedding AS vector)) AS score
@@ -85,14 +90,17 @@ async def search(user_id: str, query: str, top_k: int | None = None) -> list[Mem
                     ORDER BY embedding <=> CAST(:embedding AS vector)
                     LIMIT :k
                     """
-                ),
-                {
-                    "user_id": user_id,
-                    "embedding": _to_pgvector(embedding),
-                    "k": k,
-                },
+                    ),
+                    {
+                        "user_id": user_id,
+                        "embedding": _to_pgvector(embedding),
+                        "k": k,
+                    },
+                )
             )
-        ).mappings().all()
+            .mappings()
+            .all()
+        )
         ids = [r["id"] for r in rows]
         if ids:
             await s.execute(
@@ -113,9 +121,10 @@ async def search(user_id: str, query: str, top_k: int | None = None) -> list[Mem
 async def list_for_user(user_id: str, limit: int = 100) -> list[Memory]:
     async with session() as s:
         rows = (
-            await s.execute(
-                text(
-                    """
+            (
+                await s.execute(
+                    text(
+                        """
                     SELECT id, user_id, content, context, category, importance,
                            created_at, updated_at, access_count, last_used_at
                     FROM memories
@@ -123,10 +132,13 @@ async def list_for_user(user_id: str, limit: int = 100) -> list[Memory]:
                     ORDER BY created_at DESC
                     LIMIT :limit
                     """
-                ),
-                {"user_id": user_id, "limit": limit},
+                    ),
+                    {"user_id": user_id, "limit": limit},
+                )
             )
-        ).mappings().all()
+            .mappings()
+            .all()
+        )
     return [Memory(**dict(r)) for r in rows]
 
 

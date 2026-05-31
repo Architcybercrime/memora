@@ -7,6 +7,7 @@ Transcription itself is CPU-bound, so we offload to a thread.
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import logging
 from functools import lru_cache
 from pathlib import Path
@@ -48,10 +49,8 @@ async def transcribe_bytes(audio: bytes, suffix: str = ".webm") -> str:
     try:
         return await asyncio.to_thread(_transcribe_sync, tmp_path)
     finally:
-        try:
+        with contextlib.suppress(OSError):
             Path(tmp_path).unlink(missing_ok=True)
-        except OSError:
-            pass
 
 
 async def warmup() -> None:
