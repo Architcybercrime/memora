@@ -20,6 +20,7 @@ dependencies = [
     "langchain-openai>=0.2.8",
     "langchain-anthropic>=0.2.4",
     "langchain-google-genai>=2.0.0",
+    "langchain-mistralai>=0.2.4",
     # Memory: Redis + pgvector
     "redis[hiredis]>=5.1.1",
     "asyncpg>=0.29.0",

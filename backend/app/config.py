@@ -16,16 +16,17 @@ class Settings(BaseSettings):
     )
 
     # LLM
-    llm_provider: Literal["openai", "anthropic", "google"] = "google"
-    llm_model: str = "gemini-2.0-flash"
+    llm_provider: Literal["openai", "anthropic", "google", "mistral"] = "mistral"
+    llm_model: str = "mistral-small-latest"
     openai_api_key: str | None = None
     anthropic_api_key: str | None = None
     google_api_key: str | None = None
+    mistral_api_key: str | None = None
 
     # Embeddings — can target a different provider than the LLM if desired.
-    embedding_provider: Literal["openai", "google"] = "google"
-    embedding_model: str = "models/text-embedding-004"
-    embedding_dim: int = 768
+    embedding_provider: Literal["openai", "google", "mistral"] = "mistral"
+    embedding_model: str = "mistral-embed"
+    embedding_dim: int = 1024
 
     # Postgres
     postgres_host: str = "localhost"

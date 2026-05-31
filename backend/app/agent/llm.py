@@ -30,4 +30,12 @@ def get_llm() -> BaseChatModel:
             google_api_key=s.google_api_key,
             temperature=0.3,
         )
+    if s.llm_provider == "mistral":
+        from langchain_mistralai import ChatMistralAI
+
+        return ChatMistralAI(
+            model=s.llm_model,
+            api_key=s.mistral_api_key,
+            temperature=0.3,
+        )
     raise ValueError(f"unknown llm_provider: {s.llm_provider}")

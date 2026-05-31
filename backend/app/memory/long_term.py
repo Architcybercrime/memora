@@ -41,6 +41,13 @@ def _embeddings() -> Embeddings:
                 model=s.embedding_model,
                 google_api_key=s.google_api_key,
             )
+        elif s.embedding_provider == "mistral":
+            from langchain_mistralai import MistralAIEmbeddings
+
+            _embedder = MistralAIEmbeddings(
+                model=s.embedding_model,
+                api_key=s.mistral_api_key,
+            )
         else:
             raise ValueError(f"unknown embedding_provider: {s.embedding_provider}")
     return _embedder
